@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title></title>
+	<link rel="stylesheet" href="">
+	<title>Firebase Example</title>
+</head>
+<body>
+	<button type="" onclick="writeUserData(1, 'Gary', 'gary@nutc.edu.tw')">寫</button>
+	<button onclick="readUserData(1)">讀</button><br>
+
+	<input type="text" id="name" placeholder="商品">
+	<input type="text" id="price" placeholder="價格">
+	<input type="text" id="number" placeholder="數量">
+	<button onclick="writeData()">新增</button><br>
+	<label id="data"></label><br>
+
+	<input type="file" id="photo">
+	<img id="image"/>
+	<button onclick="uploadImage()">上傳</button><br>
+
+</body>
+<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-storage.js"></script>
+<script src="auth.js"></script>
+<script>
+function writeUserData(userId, name, email) {
+	// 這個例子是會創一個 users 的 collection
+	db.ref('/users/' + userId).set({
+		username: name,				//name
+	    email: email				//email
+	})
+	.then(function () {alert("建立成功");})
+	.catch(function () {alert("伺服器發生錯誤，請稍後再試");});
+}
+</script>
+<script>
+function readUserData(userId) {
+	//從F12中可以看到從firebase讀取出的users data
+		db.ref('/users/' + userId).once('value', function (snapshot) {
+		var data = snapshot.val();
+	    console.log(data);
+	});
+}	
+</script>
+
+<script>
+function writeData(){
+	db.ref("goods").push({
+		name: document.getElementById("name").value,
+		price: document.getElementById("price").value,
+		number: document.getElementById("number").value
+	}).then(function () {
+		alert("商品新增成功");
+	}).catch(function () {
+		alert("發生錯誤，請稍後再試");
+	});		
+	getData();
+}
+function getData(){
+	db.ref("goods").on("value", function(snapshot){
+		snapshot.forEach(function(childSnapshot){
+			var childKey = childSnapshot.key;
+			var childData = childSnapshot.val();
+			document.getElementById("data").innerHTML = "商品名稱： " + childData["name"] + ", " + "商品價格： " + childData["price"] + ", " + "商品數量： " + childData["number"];
+		});
+	});
+	getData();
+}
+</script>
+<script>
+function uploadImage(){
+	//將圖片上傳至firebase #storage是儲存的語法
+	const ref  = firebase.storage().ref();
+	const file = document.querySelector("#photo").files[0];
+	const name = new Date() + '-' + file.name;
+	const matadata = {
+		contentType: file.type
+	};
+	const task = ref.child(name).put(file,matadata);
+	//#snapshot 是快取的語法
+	task
+	.then(snapshot => snapshot.ref.getDownloadURL())
+	.then(url => {
+		console.log(url);
+		alert("圖片上傳成功");
+		const image = document.querySelector('#image');
+		image.src = url;
+	});
+};
+</script>
+</html>
