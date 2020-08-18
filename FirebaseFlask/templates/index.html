@@ -14,21 +14,38 @@
 	<input type="text" id="name" placeholder="商品">
 	<input type="text" id="price" placeholder="價格">
 	<input type="text" id="number" placeholder="數量">
-	<button onclick="writeData()">新增</button><br>
+	<br>
+	<button onclick="CreateData()">新增</button><br>
+	<button onclick="ReadData()">讀取</button><br>
+	<button onclick="UpdateData()">編輯</button><br>
+	<button onclick="DeleteData()">刪除</button><br>
 	<label id="data"></label><br>
 
 	<input type="file" id="photo">
 	<img id="image"/>
-	<button onclick="uploadImage()">上傳</button><br>
+	<button onclick="uploadImage()">上傳</button><br><br>
+
+	圖片名稱<input type="text" id="namebox"><br><br>
+	<img id="myimg">
+	<label id="UpProgress"></label><br><br>
+	<button id="select">選取圖片</button><br>
+	<button id="upload">上傳圖片</button><br>
+	<button id="retrieve">檢索圖片</button><br>
+
 
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+<script src="mySocketConnect.js"></script>
 <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-analytics.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-storage.js"></script>
 <script src="auth.js"></script>
+<script src="image.js"></script>
 <script>
+var db = firebase.database();
 function writeUserData(userId, name, email) {
 	// 這個例子是會創一個 users 的 collection
 	db.ref('/users/' + userId).set({
@@ -50,8 +67,8 @@ function readUserData(userId) {
 </script>
 
 <script>
-function writeData(){
-	db.ref("goods").push({
+function CreateData(){
+	db.ref("good").push({
 		name: document.getElementById("name").value,
 		price: document.getElementById("price").value,
 		number: document.getElementById("number").value
@@ -60,38 +77,16 @@ function writeData(){
 	}).catch(function () {
 		alert("發生錯誤，請稍後再試");
 	});		
-	getData();
 }
-function getData(){
-	db.ref("goods").on("value", function(snapshot){
+function ReadData(){
+	db.ref("good").on("value", function(snapshot){
 		snapshot.forEach(function(childSnapshot){
 			var childKey = childSnapshot.key;
 			var childData = childSnapshot.val();
 			document.getElementById("data").innerHTML = "商品名稱： " + childData["name"] + ", " + "商品價格： " + childData["price"] + ", " + "商品數量： " + childData["number"];
 		});
 	});
-	getData();
+	ReadData();
 }
-</script>
-<script>
-function uploadImage(){
-	//將圖片上傳至firebase #storage是儲存的語法
-	const ref  = firebase.storage().ref();
-	const file = document.querySelector("#photo").files[0];
-	const name = new Date() + '-' + file.name;
-	const matadata = {
-		contentType: file.type
-	};
-	const task = ref.child(name).put(file,matadata);
-	//#snapshot 是快取的語法
-	task
-	.then(snapshot => snapshot.ref.getDownloadURL())
-	.then(url => {
-		console.log(url);
-		alert("圖片上傳成功");
-		const image = document.querySelector('#image');
-		image.src = url;
-	});
-};
 </script>
 </html>

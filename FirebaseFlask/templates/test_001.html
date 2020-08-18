@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Hello, world!</title>
+</head>
+<body onload="readGoods()">
+    <div>
+        <div>
+             <div id="firstSection">
+                <form id="form">
+                    <div>
+                        <label>serial</label>
+                        <input id="serial" placeholder="serial">
+                    </div>
+                    <div>
+                        <label>name</label>
+                        <input id="name" placeholder="name">
+                    </div>
+                    <div>
+                        <label>price</label>
+                        <input id="price" placeholder="price">
+                    </div>
+                    <div>
+                        <label>number</label>
+                        <input id="number" placeholder="number">
+                    </div>
+                    <button id="button1">Create</button>
+                    <button style="display: none" id="button2" >Update</button>
+                    <button style="display: none" id="button3" >Cancel</button>
+                </form>
+            </div>
+            <div id="cardSection"></div>
+        </div>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-database.js"></script>
+
+<script>
+    var firebaseConfig = {
+    apiKey: "******************************",
+    authDomain: "******************************",
+    databaseURL: "******************************",
+    projectId: "******************************",
+    storageBucket: "******************************",
+    messagingSenderId: "******************************",
+    appId: "******************************",
+    measurementId: "******************************"
+    };
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+
+    var d = new Date();
+    var t = d.getTime();
+    var counter = t;
+    
+    document.getElementById("form").addEventListener("submit",(e)=>
+    {
+      var serial = document.getElementById("serial").value;
+      var name = document.getElementById("name").value;
+      var price = document.getElementById("price").value;
+      var number = document.getElementById("number").value;
+      e.preventDefault();
+      createGoods(serial,name,price,number);
+      form.reset();
+
+    });
+
+    function createGoods(serial,name,price,number)
+    {
+      console.log(counter);
+      counter+=1;
+      console.log(counter);
+      var goods=
+      {
+        id : counter,
+        serial:serial,
+        name:name,
+        price:price,
+        number:number
+      }
+      let db=firebase.database().ref("goods/"+counter);
+      db.set(goods);
+      document.getElementById("cardSection").innerHTML='';
+      readGoods();
+    }
+
+    function readGoods()
+    {
+      var goods=firebase.database().ref("goods/");
+      goods.on("child_added",function(data){
+        var goodsValue= data.val();
+        
+        document.getElementById("cardSection").innerHTML+=
+        `
+          <div>
+            <div>
+              <h5>${goodsValue.serial}</h5>
+              <p>${goodsValue.name}</p>
+              <p>${goodsValue.price}</p>
+              <p>${goodsValue.number}</p>
+              <button type="submit"  onclick="updateGoods(${goodsValue.id},'${goodsValue.serial}','${goodsValue.name}','${goodsValue.price}','${goodsValue.number}')"> Edit</button>
+              <button type="submit" onclick="deleteGoods('${goodsValue.id}')"> Delete</button>
+            </div>
+          </div>    
+        `
+      });
+    }
+
+    function reset()
+    {
+      document.getElementById("firstSection").innerHTML=
+      `
+        <form id="form">
+            <div>
+              <label>serial</label>
+              <input id="serial" placeholder="serial">
+            </div>
+            <div>
+              <label>name</label>
+              <input id="name" placeholder="name">
+            </div>
+            <div>
+              <label>price</label>
+              <input id="price" placeholder="price">
+            </div>
+            <div>
+              <label>number</label>
+              <input id="number" placeholder="number">
+            </div>
+            <button id="button1">Create</button>
+            <button style="display: none" id="button2" >Update</button>
+            <button style="display: none" id="button3" >Cancel</button>
+          </form>
+      `;
+
+      document.getElementById("form").addEventListener("submit",(e)=>
+      {
+        var serial = document.getElementById("serial").value;
+        var name = document.getElementById("name").value;
+        var price = document.getElementById("price").value;
+        var number = document.getElementById("number").value;
+        e.preventDefault();
+        createGoods(serial,name,price,number);
+        form.reset();
+
+      });   
+    }
+
+    function updateGoods(id,serial,name,price,number)
+    {
+      document.getElementById("firstSection").innerHTML=
+      `
+        <form id="form2">
+            <div>
+              <label>serial</label>
+              <input id="serial" placeholder="serial">
+            </div>
+            <div>
+              <label>name</label>
+              <input id="name" placeholder="name">
+            </div>
+            <div>
+              <label>price</label>
+              <input id="price" placeholder="price">
+            </div>
+            <div>
+              <label>number</label>
+              <input id="number" placeholder="number">
+            </div>
+            <button style="display: none" id="button1">Create</button>
+            <button style="display: inline-block" id="button2">Update</button>
+            <button style="display: inline-block" id="button3">Cancel</button>
+          </form>
+      `;
+
+      document.getElementById("form2").addEventListener("submit",(e)=>
+      {
+        e.preventDefault();
+      });
+      document.getElementById("button3").addEventListener("click",(e)=>
+      {
+        reset();
+      });
+      document.getElementById("button2").addEventListener("click",(e)=>
+      {
+        updateGoods2(
+          id,
+          document.getElementById("serial").value,
+          document.getElementById("name").value,
+          document.getElementById("price").value,
+          document.getElementById("number").value);
+        });
+        document.getElementById("serial").value=serial;
+        document.getElementById("name").value=name;
+        document.getElementById("price").value=price;
+        document.getElementById("number").value=number;
+    }
+
+    function updateGoods2(id,serial,name,price,number)
+    {
+    var goodsUpdate={
+        serial:serial,
+        id:id,
+        name:name,
+        price:price,
+        number:number
+      }
+      let db=firebase.database().ref("goods/"+id);
+      db.set(goodsUpdate);
+      document.getElementById("cardSection").innerHTML='';
+      readGoods();
+      reset();
+    }
+
+    function deleteGoods(id)
+    {
+      var goods=firebase.database().ref("goods/"+id);
+      goods.remove(); 
+      reset();
+      document.getElementById("cardSection").innerHTML='';
+      readGoods();
+    }
+</script>
+
+</html>
